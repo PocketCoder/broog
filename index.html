@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>Train Operators in the UK and their owners</title>
+		<script src="https://d3js.org/d3.v7.min.js"></script>
+		<style>
+			html,
+			body {
+				height: 100vh;
+				width: 100vw;
+				overflow: hidden;
+				margin: 0;
+				padding: 0;
+				font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+			}
+			
+			.link {
+				stroke-opacity: 0.6;
+			}
+
+			.node {
+				stroke: #fff;
+				stroke-width: 1.5px;
+				cursor: grab;
+			}
+
+			.label {
+				fill: #555;
+				font-size: 10px;
+				text-anchor: center;
+			}
+
+			aside {
+				display: flex;
+				display: -webkit-flex;
+				flex-direction: column;
+				justify-content: space-evenly;
+				align-items: center;
+				height: 100%;
+				width: 300px;
+				position: fixed;
+				right: 0;
+			}
+
+			#key {
+				display: flex;
+				display: -webkit-flex;
+				justify-content: space-evenly;
+				align-items: center;
+				flex-wrap: wrap;
+				height: auto;
+				width: 250px;
+			}
+
+			.group {
+				display: flex;
+				display: -webkit-flex;
+				justify-content: center;
+				align-items: center;
+				width: 100px;
+				height: 50px;
+				border-radius: 25px;
+				padding: 5px;
+				margin: 5px;
+				text-align: center;
+				cursor: pointer;
+			}
+
+			#pie {
+				height: auto;
+				width: 250px;
+			}
+		</style>
+	</head>
+	<body>
+		<aside>
+			<section id="pie"></section>
+			<section id="key">
+				<div class="group uk-government" style="background-color: #012169; color: white;">
+					<span>UK Government</span>
+				</div>
+				<div class="group uk-company" style="background-color: #157F1F; color: white;">
+					<span>UK<br />Company</span>
+				</div>
+				<div class="group foreign-government" style="background-color: #A63D40; color: white;">
+					<span>Foreign Government</span>
+				</div>
+				<div class="group foreign-company" style="background-color: #FF9505;">
+					<span>Foreign Company</span>
+				</div>
+				<div class="group train-service" style="background-color: #5CC8FF; flex-grow: 2;">
+					<span>Train Service</span>
+				</div>
+			</section>
+		</aside>
+		<script src="data.js"></script>
+		<script src="script.js"></script>
+	</body>
+</html>
