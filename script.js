@@ -1,5 +1,3 @@
-// TODO: Add colour for companies that directly operate trains (e.g. Southeastern)
-
 let count = {
 	'uk-company': 0,
 	'uk-government': 0,
@@ -92,80 +90,82 @@ function createPie() {
 	}
 }
 
+// Specify the dimensions of the chart.
 const height = window.innerHeight;
 const width = window.innerWidth - 300;
-const svg = d3.select('body').append('svg').attr('width', width).attr('height', height).append('g');
 
-// Create an array of colors for different levels
+// Specify the color scale.
 const colorScale = d3
 	.scaleOrdinal()
 	.domain(['uk-company', 'uk-government', 'foreign-government', 'foreign-company', 'train-service']) // Add your types here
 	.range(['#157F1F', '#012169', '#A63D40', '#FF9505', '5CC8FF']); // Add corresponding colors
 
-// Create the D3 force simulation
+// The force simulation mutates links and nodes, so create a copy
+// so that re-evaluating this cell produces the same result.
+const linksN = links.map((d) => ({...d}));
+const nodesN = nodes.map((d) => ({...d}));
+
+// Create a simulation with several forces.
 const simulation = d3
-	.forceSimulation(nodes)
+	.forceSimulation(nodesN)
 	.force(
 		'link',
-		d3
-			.forceLink(links)
-			.id((d) => d.id)
-			.distance((d) => 40)
+		d3.forceLink(linksN).id((d) => d.id)
 	)
-	.force('charge', d3.forceManyBody())
-	.force('center', d3.forceCenter(width / 2, height / 2).strength(0.2)) // Reduce the force of centering
-	.force('collision', d3.forceCollide().radius(10)) // Added collision force
-	.on('tick', tick);
+	.force('charge', d3.forceManyBody().strength(-350)) // Increase the repulsion strength
+	.force('x', d3.forceX(width / 2).strength(0.15)) // Increase the x-positioning strength
+	.force('y', d3.forceY(height / 2).strength(0.2)) // Increase the y-positioning strength
+	.force(
+		'center',
+		d3.forceRadial(Math.min(width, height) * 0.4, width / 2, height / 2) // Set a radial force to distribute nodes
+	);
 
-// Create the links
-const link = svg.selectAll('.link').data(links).enter().append('line').attr('class', 'link');
+// Create the SVG container.
+const svg = d3.select('body').append('svg').attr('width', width).attr('height', height).append('g');
 
-// Create the nodes
+// Add a line for each link, and a circle for each node.
+const link = svg
+	.append('g')
+	.attr('stroke', '#999')
+	.attr('stroke-opacity', 0.6)
+	.selectAll('line')
+	.data(linksN)
+	.enter()
+	.append('line')
+	.attr('stroke-width', (d) => Math.sqrt(d.value));
+
 const node = svg
-	.selectAll('.node')
-	.data(nodes)
+	.append('g')
+	.attr('stroke', '#fff')
+	.attr('stroke-width', 1.5)
+	.selectAll('circle')
+	.data(nodesN)
 	.enter()
 	.append('circle')
+	.attr('r', (d) => {
+		if (d.type === 'train-service') {
+			return 5;
+		} else if (d.type === 'uk-government' || d.type === 'foreign-government') {
+			return 10;
+		} else {
+			return 7.5;
+		}
+	})
+	.style('fill', (d) => colorScale(d.type))
 	.attr('class', 'node')
-	.attr('r', 10)
 	.call(drag(simulation));
 
-// Add labels to the nodes
 const label = svg
 	.selectAll('.label')
-	.data(nodes)
+	.data(nodesN)
 	.enter()
 	.append('text')
 	.attr('class', 'label')
 	.attr('dy', 4)
-	.text((d) => d.label);
+	.text((d) => d.id);
 
-function tick() {
-	link
-		.attr('x1', (d) => Math.max(0, Math.min(width, d.source.x)))
-		.attr('y1', (d) => Math.max(0, Math.min(height, d.source.y)))
-		.attr('x2', (d) => Math.max(0, Math.min(width, d.target.x)))
-		.attr('y2', (d) => Math.max(0, Math.min(height, d.target.y)))
-		.style('stroke', (d) => colorScale(d.level)); // Assign color based on link level
-
-	node
-		.attr('cx', (d) => (d.x = Math.max(10, Math.min(width - 10, d.x)))) // Bounce off the horizontal edges
-		.attr('cy', (d) => (d.y = Math.max(10, Math.min(height - 10, d.y)))) // Bounce off the vertical edges
-		.style('fill', (d) => colorScale(d.type)) // Assign color based on node type
-		.attr('r', (d) => {
-			if (d.type === 'train-service') {
-				return 5;
-			} else if (d.type === 'uk-government' || d.type === 'foreign-government') {
-				return 10;
-			} else {
-				return 7.5;
-			}
-		});
-
-	label
-		.attr('x', (d) => d.x + 15) // Adjust the x position for label placement
-		.attr('y', (d) => d.y);
-}
+// Set the position attributes of links and nodes each time the simulation ticks.
+simulation.on('tick', tick);
 
 function drag(simulation) {
 	function dragstarted(event, d) {
@@ -174,19 +174,20 @@ function drag(simulation) {
 		// Add fading effect to other nodes, links, and labels
 		node.style('opacity', (n) => {
 			const isConnected =
-				n === d || links.some((l) => (l.source === d && l.target === n) || (l.source === n && l.target === d));
+				n === d || linksN.some((l) => (l.source === d && l.target === n) || (l.source === n && l.target === d));
 			return isConnected ? 1 : 0.2;
 		});
 
 		link.style('opacity', (l) => {
-			const isConnected = l.source === d || l.target === d || (l.source === d && isDirectlyConnected(l.target, d, 2));
+			const isConnected =
+				l.source === d || l.target === d || isDirectlyConnected(l.source, d, 1) || isDirectlyConnected(l.target, d, 1);
 			return isConnected ? 1 : 0.2;
 		});
 
 		label.style('opacity', (l) => {
 			const isConnected =
 				l === d ||
-				links.some((lnk) => (lnk.source === d && lnk.target === l) || (lnk.source === l && lnk.target === d));
+				linksN.some((lnk) => (lnk.source === d && lnk.target === l) || (lnk.source === l && lnk.target === d));
 			return isConnected ? 1 : 0.2;
 		});
 
@@ -194,44 +195,43 @@ function drag(simulation) {
 		d.fy = d.y;
 	}
 
-	function dragged(event, d) {
-		d.fx = event.x;
-		d.fy = event.y;
-	}
-
 	function dragended(event, d) {
 		if (!event.active) simulation.alphaTarget(0);
-
-		// Remove fading effect from nodes, links, and labels
 		node.style('opacity', 1);
 		link.style('opacity', 1);
 		label.style('opacity', 1);
-
 		d.fx = null;
 		d.fy = null;
 	}
 
+	// Update the subject (dragged node) position during drag.
+	function dragged(event, d) {
+		d.fx = event.x;
+		d.fy = event.y;
+	}
 	return d3.drag().on('start', dragstarted).on('drag', dragged).on('end', dragended);
 }
 
-function isDirectlyConnected(node1, node2, maxDepth) {
-	if (maxDepth === 0) return false;
+function tick() {
+	link
+		.attr('x1', (d) => Math.max(0, Math.min(width, d.source.x)))
+		.attr('y1', (d) => Math.max(0, Math.min(height, d.source.y)))
+		.attr('x2', (d) => Math.max(0, Math.min(width, d.target.x)))
+		.attr('y2', (d) => Math.max(0, Math.min(height, d.target.y)));
 
-	const directLinks = links.filter(
-		(l) => (l.source === node1 && l.target === node2) || (l.source === node2 && l.target === node1)
+	node
+		.attr('cx', (d) => (d.x = Math.max(10, Math.min(width - 10, d.x)))) // Bounce off the horizontal edges
+		.attr('cy', (d) => (d.y = Math.max(10, Math.min(height - 10, d.y)))); // Bounce off the vertical edges;
+
+	label.attr('x', (d) => d.x + 15).attr('y', (d) => d.y);
+}
+
+function isDirectlyConnected(node1, node2, distance) {
+	return linksN.some(
+		(l) =>
+			(l.source === node1 && l.target === node2 && l.distance <= distance) ||
+			(l.source === node2 && l.target === node1 && l.distance <= distance)
 	);
-	if (directLinks.length > 0) return true;
-
-	for (const link of links) {
-		if (link.source === node1 && isDirectlyConnected(link.target, node2, maxDepth - 1)) {
-			return true;
-		}
-		if (link.target === node1 && isDirectlyConnected(link.source, node2, maxDepth - 1)) {
-			return true;
-		}
-	}
-
-	return false;
 }
 
 function handleGroupHover(event) {
