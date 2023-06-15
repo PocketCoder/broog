@@ -16,7 +16,7 @@
 
 ## Chat Export
 
-[All the chats I've had with ChatGPT to make this site.](https://pocketcoder.github.io/broog/transcripts/chat.html)
+[All the chats I've had with ChatGPT to make this site.](https://pocketcoder.github.io/broog/transcripts/index.html)
 
 ## TODO:
 
