@@ -49,6 +49,7 @@ const nodes = [
 	{id: 'Greater Anglia', label: 'Greater Anglia', type: 'train-service'},
 	{id: 'Heathrow Airport Holdings', label: 'Heathrow Airport Holdings', type: 'uk-company'},
 	{id: 'Heathrow Express', label: 'Heathrow Express', type: 'train-service'},
+	{id: 'Heathrow Express Operating Company', label: 'Heathrow Express Operating Company', type: 'uk-company'},
 	{id: 'Hong Kong Government', label: 'Hong Kong Government', type: 'foreign-government'},
 	{id: 'Hull Trains', label: 'Hull Trains', type: 'train-service'},
 	{id: 'Italian Government', label: 'Italian Government', type: 'foreign-government'},
@@ -208,9 +209,11 @@ const links = [
 	{source: 'DfT OLR Holdings', target: 'TransPennine Express'},
 	// Break
 	{source: 'Great Western Railway', target: 'Heathrow Express'},
-	{source: 'Heathrow Airport Holdings', target: 'Heathrow Express'},
+	{source: 'Heathrow Airport Holdings', target: 'Heathrow Express Operating Company'},
+	{source: 'Heathrow Express Operating Company', target: 'Heathrow Express'},
 	{source: 'FGP Topco Limited', target: 'Heathrow Airport Holdings'}
 ];
+
 const levels = {
 	'Amey plc': 3,
 	Arriva: 3,
@@ -257,7 +260,8 @@ const levels = {
 	'Great Western Railway': 2,
 	'Greater Anglia': 3,
 	'Heathrow Airport Holdings': 4,
-	'Heathrow Express': 5,
+	'Heathrow Express': 6,
+	'Heathrow Express Operating Company': 5,
 	'Hong Kong Government': 1,
 	'Hull Trains': 2,
 	'Italian Government': 1,
