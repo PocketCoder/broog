@@ -134,6 +134,8 @@ const link = svg
 	.append('line')
 	.attr('stroke-width', (d) => Math.sqrt(d.value));
 
+const maxLevel = 8;
+
 const node = svg
 	.append('g')
 	.attr('stroke', '#fff')
@@ -143,13 +145,8 @@ const node = svg
 	.enter()
 	.append('circle')
 	.attr('r', (d) => {
-		if (d.type === 'train-service') {
-			return 5;
-		} else if (d.type === 'uk-government' || d.type === 'foreign-government') {
-			return 10;
-		} else {
-			return 7.5;
-		}
+		const scaleFactor = 10 / maxLevel; // Adjust the scale factor as needed
+		return scaleFactor * (maxLevel - levels[d.id] + 1);
 	})
 	.style('fill', (d) => colorScale(d.type))
 	.attr('class', 'node')
