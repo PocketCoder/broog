@@ -22,4 +22,4 @@
 
 - [x] Add colour for companies that directly operate trains (e.g. Southeastern) / Include in `Train Service`
 - [ ] Add sources for information that is revealed on hover
-- [ ] Fix hover over categories
+- [x] Fix hover over categories

@@ -10,8 +10,8 @@ window.onload = () => {
 	// Add event listeners to key groups
 	const keyGroups = document.querySelectorAll('div.group');
 	keyGroups.forEach((group) => {
-		group.addEventListener('mouseenter', handleGroupHover);
-		group.addEventListener('mouseout', handleGroupHoverOut);
+		group.addEventListener('mouseover', handleGroupHover);
+		group.addEventListener('mouseleave', handleGroupHoverOut);
 	});
 	for (a in nodes) {
 		const type = nodes[a]['type'];
